@@ -5,7 +5,8 @@ from GameResources import *
 
 digits = '123456789'
 rows = 'ABCDEFGHI'
-
+# testing
+# why it is not wo
 
 def play(values_list):
     pygame.init()
