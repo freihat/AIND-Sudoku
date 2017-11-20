@@ -1,4 +1,18 @@
 assignments = []
+rows = 'ABCDEFGHI'
+cols = '123456789'
+
+boxes = cross(rows, cols)
+
+row_units = [cross(r, cols) for r in rows]
+column_units = [cross(rows, c) for c in cols]
+square_units = [cross(rs, cs) for rs in ('ABC','DEF','GHI') for cs in ('123','456','789')]
+diagonal_units = [['A1', 'B2', 'C3', 'D4', 'E5', 'F6', 'G7', 'H8', 'I9'],
+                  ['A9', 'B8', 'C7', 'D6', 'E5', 'F4', 'G3', 'H2', 'I1']]
+unitlist = row_units + column_units + square_units + diagonal_units
+units = dict((s, [u for u in unitlist if s in u]) for s in boxes)
+peers = dict((s, set(sum(units[s],[]))-set([s])) for s in boxes)
+
 
 def assign_value(values, box, value):
     """
@@ -15,6 +29,21 @@ def assign_value(values, box, value):
         assignments.append(values.copy())
     return values
 
+def reduce(values):
+    # This is equivalent to eliminate function but it does elimination 
+    try:
+        solved_values = [box for box in values.keys() if len(values[box]) == 1]
+    except AttributeError: 
+        return print('irreducable')
+    a1 = len([i for i in values.values() if len(i)==1])
+    for box in solved_values:
+        digit = values[box]
+        for peer in peers[box]:
+            values[peer] = values[peer].replace(digit,'')
+    a2 = len([i for i in values.values() if len(i)==1])
+    if a2 > a1: reduce(values)
+    return values
+
 def naked_twins(values):
     """Eliminate values using the naked twins strategy.
     Args:
@@ -26,7 +55,19 @@ def naked_twins(values):
 
     # Find all instances of naked twins
     # Eliminate the naked twins as possibilities for their peers
-
+    solved_values = [box for box in values.keys() if len(values[box]) == 2]
+    a1 = len([i for i in values.values() if len(i)==2])
+    print(solved_values)
+    for box in solved_values:
+        peers_dict = {k:values[k] for k in tuple(peers[box]) if k in values}
+        if values[box] in peers_dict.values():
+        #if sum( x == values[box] for x in values.values() )
+            for peer in peers[box]:
+                if len(values[peer])>=3:
+                    for digit in values[box]:
+                        if digit in values[peer]:
+                            values[peer] = values[peer].replace(digit,'')  
+                            
 def cross(A, B):
     "Cross product of elements in A and elements in B."
     return [s+t for s in a for t in b]
@@ -49,15 +90,24 @@ def grid_values(grid):
         dic[i]=p
     return dic
 
+###############################################
 
 
+#################################################        
+        
 def display(values):
     """
     Display the values as a 2-D grid.
-    Args:
-        values(dict): The sudoku in dictionary form
+    Input: The sudoku in dictionary form
+    Output: None
     """
-    pass
+    width = 1+max(len(values[s]) for s in boxes)
+    line = '+'.join(['-'*(width*3)]*3)
+    for r in rows:
+        print(''.join(values[r+c].center(width)+('|' if c in '36' else '')
+                      for c in cols))
+        if r in 'CF': print(line)
+    return
 
 def eliminate(values):
     pass
