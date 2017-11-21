@@ -12,21 +12,19 @@ def cross(a, b):
 
 boxes = cross(rows, cols)
 
+rows = "ABCDEFGHI"
+cols = "123456789"
+boxes = cross(rows,cols)
 row_units = [cross(r, cols) for r in rows]
 column_units = [cross(rows, c) for c in cols]
-square_units = [cross(rs, cs) for rs in ('ABC','DEF','GHI') for cs in ('123','456','789')]
-diagonal_units = [['A1', 'B2', 'C3', 'D4', 'E5', 'F6', 'G7', 'H8', 'I9'],
-                  ['A9', 'B8', 'C7', 'D6', 'E5', 'F4', 'G3', 'H2', 'I1']]
-unitlist = row_units + column_units + square_units + diagonal_units
+square_units = [cross(r,x) for r in ("ABC","DEF","GHI") for x in ("123","456","789")]
+# diag units for solving diagonal sudoku
+diag_units = [[chr(64 + x) + str(x) for x in range(1,10)],[chr(74 - x) + str(x) for x in range(1,10)]]
+unitlist = row_units + column_units + square_units + diag_units
 units = dict((s, [u for u in unitlist if s in u]) for s in boxes)
 peers = dict((s, set(sum(units[s],[]))-set([s])) for s in boxes)
 
 def display(values):
-    """
-    Display the values as a 2-D grid.
-    Input: The sudoku in dictionary form
-    Output: None
-    """
     width = 1+max(len(values[s]) for s in boxes)
     line = '+'.join(['-'*(width*3)]*3)
     for r in rows:
@@ -66,18 +64,7 @@ def eliminate(values):
             values[peer] = values[peer].replace(digit,'')
     return values
 
-def only_choice(values):
-    """
-    Go through all the units, and whenever there is a unit with a value that only fits in one box, assign the value to this box.
-    Input: A sudoku in dictionary form.
-    Output: The resulting sudoku in dictionary form.
-    """
-    for unit in unitlist:
-        for digit in '123456789':
-            dplaces = [box for box in unit if digit in values[box]]
-            if len(dplaces) == 1:
-                values[dplaces[0]] = digit
-    return values
+
 
 def reduce_puzzle(values):
     """
